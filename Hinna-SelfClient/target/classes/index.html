@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Application</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+    }
+
+    #sidebar {
+        width: 250px;
+        height: 100%;
+        background-color: #333;
+        color: white;
+        position: fixed;
+    }
+
+    #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #sidebar ul li {
+        padding: 15px;
+        border-bottom: 1px solid #444;
+        cursor: pointer;
+    }
+
+    #sidebar ul li a {
+        color: white;
+        text-decoration: none;
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar with menu -->
+<div id="sidebar">
+  <ul>
+    <li><a href="#">Option 1</a></li>
+    <li><a href="#">Option 2</a></li>
+    <li><a href="#">Option 3</a></li>
+    <li><a href="#">Option 4</a></li>
+    <li><a href="#">Option 5</a></li>
+    <!-- WordPress Button -->
+    <li><a href="#" onclick="handleWordPressClick()">WordPress</a></li>
+  </ul>
+</div>
+
+<div class="main-content">
+  <h1>Main Content</h1>
+</div>
+
+<script>
+  function handleWordPressClick() {
+    const username = prompt("Do you have a WordPress account? If yes, enter your username:");
+
+    if (username) {
+      fetch('/wordpress-auth/check-username', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'username': username
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.exists) {
+          // If user exists, prompt for password
+          const password = prompt("Enter your password:");
+
+          if (password) {
+            fetch('/wordpress-auth/validate-password', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({
+                'username': username,
+                'password': password
+              })
+            })
+            .then(response => response.text())
+            .then(result => {
+              if (result === "success") {
+                alert("Login successful! Redirecting to WordPress...");
+                window.location.href = "https://your-wordpress-site.com";
+              } else {
+                alert("Incorrect password. Please try again.");
+              }
+            });
+          }
+        } else {
+          // If user doesn't exist, offer to create an account
+          if (confirm("Username not found. Would you like to create a new account?")) {
+            createNewAccount(username);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  }
+
+  function createNewAccount(username) {
+    fetch('/wordpress-auth/create-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        'username': username
+      })
+    })
+    .then(response => response.text())
+    .then(newPassword => {
+      alert(`Account created! Your new password is: ${newPassword}. You will now be redirected.`);
+      window.location.href = "https://your-wordpress-site.com";  // Redirect to WordPress site after account creation
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
+</script>
+
+</body>
+</html>

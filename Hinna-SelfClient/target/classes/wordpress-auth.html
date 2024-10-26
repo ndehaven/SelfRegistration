@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Authentication</title>
+    <style>
+        .auth-box {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .auth-box button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .auth-box button:hover {
+            background-color: #444;
+        }
+
+        .auth-box .message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="auth-box">
+    <h2>WordPress Authentication</h2>
+    <form action="/wordpress-login" method="post">
+        <input type="text" name="username" placeholder="Enter Username" th:value="${username}" required>
+        <input type="password" name="password" placeholder="Enter Password" th:if="${message}" required>
+        <button type="submit">Submit</button>
+    </form>
+    <p class="message" th:text="${message}"></p>
+    <a href="#">Create Account</a>
+</div>
+</body>
+</html>

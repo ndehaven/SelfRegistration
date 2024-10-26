@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Application</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+    }
+
+    #sidebar {
+        width: 250px;
+        height: 100%;
+        background-color: #333;
+        color: white;
+        position: fixed;
+    }
+
+    #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #sidebar ul li {
+        padding: 15px;
+        border-bottom: 1px solid #444;
+        cursor: pointer;
+    }
+
+    #sidebar ul li a {
+        color: white;
+        text-decoration: none;
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        width: 100%;
+    }
+
+    /* Modal styles */
+    #loginPanel {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+    }
+
+    .panel-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 300px;
+        border-radius: 5px;
+    }
+
+    .panel-header {
+        margin-bottom: 10px;
+        font-size: 1.2em;
+    }
+
+    input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    button {
+        padding: 10px 15px;
+        background-color: #5cb85c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #4cae4c;
+    }
+
+    .create-account {
+        display: block;
+        margin-top: 10px;
+        text-align: center;
+        color: #007BFF;
+        cursor: pointer;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar with menu -->
+<div id="sidebar">
+  <ul>
+    <li><a href="#">Option 1</a></li>
+    <li><a href="#">Option 2</a></li>
+    <li><a href="#">Option 3</a></li>
+    <li><a href="#">Option 4</a></li>
+    <li><a href="#">Option 5</a></li>
+    <!-- WordPress Button -->
+    <li><a href="#" onclick="openLoginPanel()">WordPress</a></li>
+  </ul>
+</div>
+
+<div class="main-content">
+  <h1>Main Content</h1>
+</div>
+
+<!-- Modal for login -->
+<div id="loginPanel">
+  <div class="panel-content">
+    <div class="panel-header">Login to WordPress</div>
+    <input type="text" id="username" placeholder="Username" required>
+    <div id="username-error" style="color: red; display: none;"></div>
+    <input type="password" id="password" placeholder="Password" required>
+    <div id="passwordError" class="error-message"></div> <!-- Error message for password -->
+    <button id="submitBtn" onclick="handleWordPressLogin()">Login</button>
+    <div class="create-account" onclick="redirectToCreateAccount()">Create WordPress Account</div>
+  </div>
+</div>
+
+<script>
+  function openLoginPanel() {
+      document.getElementById("loginPanel").style.display = "block";
+  }
+
+  function closeLoginPanel() {
+      document.getElementById("loginPanel").style.display = "none";
+      clearErrors(); // Clear errors when closing the modal
+  }
+
+  function redirectToCreateAccount() {
+      window.location.href = 'password-generator.html'; // Redirect to the password generator page
+  }
+
+  function handleWordPressLogin() {
+    clearErrors(); // Clear previous error messages
+
+    const usernameInput = document.getElementById("username").value;
+    const passwordInput = document.getElementById("password").value;
+
+    // Load the XML and parse the data
+    fetch('/src/main/resources/wordpress-users.xml')
+      .then(response => response.text())
+      .then(data => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data, "text/xml");
+
+        // Find user by username
+        const users = xmlDoc.getElementsByTagName("user");
+        let userFound = false;
+        for (let i = 0; i < users.length; i++) {
+          const username = users[i].getElementsByTagName("username")[0].textContent;
+          const password = users[i].getElementsByTagName("password")[0].textContent;
+
+          if (username === usernameInput) {
+            userFound = true;
+            if (password === passwordInput) {
+              // Successful login: redirect to the iframe page or wherever needed
+              window.location.href = 'iframe-page.html';
+            } else {
+              // Password incorrect
+              document.getElementById("passwordError").innerText = "Invalid password.";
+              document.getElementById("passwordError").style.display = "block";
+            }
+            break;
+          }
+        }
+
+        if (!userFound) {
+          document.getElementById("username-error").innerText = "Username not found.";
+          document.getElementById("username-error").style.display = "block";
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching XML:', error);
+      });
+  }
+
+  function clearErrors() {
+    document.getElementById("username-error").style.display = 'none';
+    document.getElementById("passwordError").style.display = 'none';
+  }
+
+  // Close modal when clicking outside of it
+  window.onclick = function(event) {
+      const modal = document.getElementById("loginPanel");
+      if (event.target === modal) {
+          closeLoginPanel();
+      }
+  }
+</script>
+
+</body>
+</html>
